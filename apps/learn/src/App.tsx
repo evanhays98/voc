@@ -1,14 +1,18 @@
 import { Routes, Route } from "react-router-dom";
-import { DashboardPage } from "./pages/DashboardPage";
+import { useEffect } from "react";
+import { LessonsPage } from "./pages/LessonsPage";
 import { StudyPage } from "./pages/StudyPage";
-import { DecksPage } from "./pages/DecksPage";
+import { progressStore } from "./store/progressStoreInstance";
 
 export default function App() {
+  useEffect(() => {
+    progressStore.getStore().loadFromDb();
+  }, []);
+
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
-      <Route path="/decks" element={<DecksPage />} />
-      <Route path="/study/:deckId" element={<StudyPage />} />
+      <Route path="/" element={<LessonsPage />} />
+      <Route path="/study/:lessonSlug" element={<StudyPage />} />
     </Routes>
   );
 }

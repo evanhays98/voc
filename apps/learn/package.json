@@ -11,9 +11,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@starter/global-store": "workspace:*",
     "@vocabulary/hooks": "workspace:*",
     "@vocabulary/ui": "workspace:*",
     "@vocabulary/utils": "workspace:*",
+    "framer-motion": "^12.38.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.23.0"
