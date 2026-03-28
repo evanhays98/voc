@@ -1,20 +1,28 @@
 import { useState } from "react";
 import { InlineSentence } from "./InlineSentence";
 import type { LessonCard, CardProgress } from "@vocabulary/utils";
+import { useSpeech } from "../hooks/useSpeech";
 
 interface VocabCardProps {
   card: LessonCard;
+  targetLanguage: string;
   progress: CardProgress | undefined;
   onCorrect: () => void;
   onWrong: () => void;
 }
 
-export const VocabCard = ({ card, progress, onCorrect, onWrong }: VocabCardProps) => {
+export const VocabCard = ({ card, targetLanguage, progress, onCorrect, onWrong }: VocabCardProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
 
+  const { speak, isSpeaking, skip } = useSpeech();
   const level = progress?.level ?? 0;
+
+  const handleNext = (correct: boolean) => {
+    if (correct) onCorrect();
+    else onWrong();
+  };
 
   const submit = () => {
     if (isRevealed) return;
@@ -22,15 +30,18 @@ export const VocabCard = ({ card, progress, onCorrect, onWrong }: VocabCardProps
     const correct = normalised === card.targetWord.toLowerCase();
     setIsCorrect(correct);
     setIsRevealed(true);
-    if (correct) {
-      onCorrect();
-    } else {
-      onWrong();
-    }
+
+    const spokenSentence = card.sentence.replace("____", card.targetWord);
+    speak(spokenSentence, targetLanguage, () => handleNext(correct));
   };
 
   return (
     <div className="rounded-3xl border border-gray-200 bg-white shadow-md p-8 flex flex-col gap-6">
+      {/* Always-visible: level badge */}
+      <div className="flex items-center justify-between">
+        <LevelIndicator level={level} />
+      </div>
+
       <InlineSentence
         sentence={card.sentence}
         targetWord={card.targetWord}
@@ -43,13 +54,12 @@ export const VocabCard = ({ card, progress, onCorrect, onWrong }: VocabCardProps
         hint={card.hint}
       />
 
-      {isRevealed && (
-        <TranslationBlock
-          translation={card.translation}
-          nativeWord={card.nativeWord}
-          isCorrect={isCorrect!}
-        />
-      )}
+      {/* Always-visible: native translation block */}
+      <TranslationBlock
+        translation={card.translation}
+        nativeWord={card.nativeWord}
+        isCorrect={isRevealed ? isCorrect : null}
+      />
 
       {!isRevealed && (
         <div className="flex justify-end">
@@ -63,9 +73,14 @@ export const VocabCard = ({ card, progress, onCorrect, onWrong }: VocabCardProps
       )}
 
       {isRevealed && (
-        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <LevelIndicator level={level} />
-          <NextButton isCorrect={isCorrect!} onNext={isCorrect ? onCorrect : onWrong} />
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <SpeakingIndicator isSpeaking={isSpeaking} isCorrect={isCorrect!} />
+          <button
+            onClick={skip}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2"
+          >
+            Passer →
+          </button>
         </div>
       )}
     </div>
@@ -75,50 +90,73 @@ export const VocabCard = ({ card, progress, onCorrect, onWrong }: VocabCardProps
 interface TranslationBlockProps {
   translation: string;
   nativeWord: string;
-  isCorrect: boolean;
+  isCorrect: boolean | null; // null = not yet answered
 }
 
-const TranslationBlock = ({ translation, nativeWord, isCorrect }: TranslationBlockProps) => (
-  <div className={`rounded-xl px-4 py-3 text-sm ${isCorrect ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
-    <p className="text-gray-500 italic">{translation}</p>
-    <p className="mt-1 font-semibold text-gray-700">
-      → <span className="text-indigo-600">{nativeWord}</span>
-    </p>
-  </div>
-);
+const TranslationBlock = ({ translation, nativeWord, isCorrect }: TranslationBlockProps) => {
+  const bg =
+    isCorrect === null
+      ? "bg-gray-50 border-gray-200"
+      : isCorrect
+      ? "bg-green-50 border-green-200"
+      : "bg-red-50 border-red-200";
+
+  return (
+    <div className={`rounded-xl px-4 py-3 text-sm border ${bg} transition-colors`}>
+      <p className="text-gray-500 italic">{translation}</p>
+      <p className="mt-1 font-semibold text-gray-700">
+        → <span className="text-indigo-600">{nativeWord}</span>
+      </p>
+    </div>
+  );
+};
 
 interface LevelIndicatorProps {
   level: number;
 }
 
-const LevelIndicator = ({ level }: LevelIndicatorProps) => (
-  <div className="flex items-center gap-1.5">
-    {[1, 2, 3, 4, 5].map((dot) => (
-      <span
-        key={dot}
-        className={`w-2 h-2 rounded-full ${
-          dot <= level ? "bg-indigo-500" : "bg-gray-200"
-        }`}
-      />
-    ))}
-    <span className="ml-1 text-xs text-gray-400">niveau {level}/5</span>
-  </div>
-);
+const LevelIndicator = ({ level }: LevelIndicatorProps) => {
+  const label = level === 0 ? "Nouveau" : level === 5 ? "Maîtrisé" : `Niveau ${level}/5`;
 
-interface NextButtonProps {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((dot) => (
+          <span
+            key={dot}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              level === 0
+                ? "bg-gray-200"
+                : dot <= level
+                ? "bg-indigo-500"
+                : "bg-gray-200"
+            }`}
+          />
+        ))}
+      </div>
+      <span className="text-xs font-medium text-gray-400">{label}</span>
+    </div>
+  );
+};
+
+interface SpeakingIndicatorProps {
+  isSpeaking: boolean;
   isCorrect: boolean;
-  onNext: () => void;
 }
 
-const NextButton = ({ isCorrect, onNext }: NextButtonProps) => (
-  <button
-    onClick={onNext}
-    className={`rounded-xl px-5 py-2 text-sm font-semibold transition-colors ${
-      isCorrect
-        ? "bg-green-500 text-white hover:bg-green-400"
-        : "bg-orange-500 text-white hover:bg-orange-400"
-    }`}
-  >
-    {isCorrect ? "Suivant ✓" : "Revoir plus tard →"}
-  </button>
+const SpeakingIndicator = ({ isSpeaking, isCorrect }: SpeakingIndicatorProps) => (
+  <div className="flex items-center gap-2">
+    <span
+      className={`w-2 h-2 rounded-full ${
+        isSpeaking
+          ? "bg-indigo-400 animate-pulse"
+          : isCorrect
+          ? "bg-green-400"
+          : "bg-red-400"
+      }`}
+    />
+    <span className="text-xs text-gray-400">
+      {isSpeaking ? "Lecture en cours…" : isCorrect ? "Correct ✓" : "Incorrect ✗"}
+    </span>
+  </div>
 );

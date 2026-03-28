@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Lesson, LessonCard, CardProgress } from "@vocabulary/utils";
+import { shuffleArray } from "@vocabulary/utils";
 import { VocabCard } from "./VocabCard";
 import { SessionComplete } from "./SessionComplete";
 import { useProgressFn } from "../store/progressStoreInstance";
@@ -18,6 +19,7 @@ export const StudySession = ({
   progressByCard,
   onExit,
 }: StudySessionProps) => {
+  const shuffled = useMemo(() => shuffleArray(dueCards), [dueCards]);
   const [index, setIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -42,10 +44,10 @@ export const StudySession = ({
     );
   }
 
-  const current = dueCards[index];
+  const current = shuffled[index];
 
   const advance = () => {
-    if (index + 1 >= dueCards.length) {
+    if (index + 1 >= shuffled.length) {
       setIsComplete(true);
     } else {
       setIndex((i) => i + 1);
@@ -87,7 +89,7 @@ export const StudySession = ({
       <SessionHeader
         title={lesson.title}
         current={index + 1}
-        total={dueCards.length}
+        total={shuffled.length}
         onExit={onExit}
       />
 
@@ -97,6 +99,7 @@ export const StudySession = ({
             <VocabCard
               key={current.id}
               card={current}
+              targetLanguage={lesson.targetLanguage}
               progress={progressByCard[current.id]}
               onCorrect={handleCorrect}
               onWrong={handleWrong}
