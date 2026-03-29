@@ -60,7 +60,8 @@ export function StudyPage() {
   return (
     <StudySession
       lesson={lesson}
-      dueCards={cardsRef.current}
+      initialCards={cardsRef.current}
+      allCards={eligibleCards}
       progressByCard={progress.progressByCard}
       onExit={() => navigate("/")}
     />

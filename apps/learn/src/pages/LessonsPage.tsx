@@ -10,6 +10,7 @@ import { SrsGraph } from "../components/SrsGraph";
 import { LuHand, LuChartColumn, LuPencil, LuPlay, LuFileText } from "react-icons/lu";
 import { InstallButton } from "../components/InstallButton";
 import { SpeechToggleButton } from "../components/SpeechToggleButton";
+import { DailyGoalSettings } from "../components/DailyGoalSettings";
 
 export function LessonsPage() {
   const navigate = useNavigate();
@@ -86,6 +87,8 @@ export function LessonsPage() {
             <span className="flex items-center justify-center gap-1.5"><LuFileText className="w-4 h-4" /> Extraire</span>
           </button>
         </div>
+
+        <DailyGoalSettings />
 
         {/* Lesson list */}
         <div className="flex flex-col gap-4">

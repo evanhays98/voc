@@ -2,14 +2,21 @@ import type React from "react";
 import { useNavigate } from "react-router-dom";
 import { ALL_LESSONS } from "../lessons";
 import { useProgress } from "../store/progressStoreInstance";
+import { useSettings } from "../store/settingsStoreInstance";
 import { StreakCalendar } from "../components/StreakCalendar";
 import { SrsGraph } from "../components/SrsGraph";
 import { getLessonColorConfig } from "../lessons/lessonColors";
 import { FaFire } from "react-icons/fa";
+import { LuTarget } from "react-icons/lu";
 
 export function StatsPage() {
   const navigate = useNavigate();
   const progress = useProgress();
+  const settings = useSettings();
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayDone = progress.dailyActivity[todayKey]?.total ?? 0;
+  const goalPct = Math.min(Math.round((todayDone / Math.max(settings.dailyGoal, 1)) * 100), 100);
 
   const totalCards = ALL_LESSONS.reduce((sum, l) => sum + l.cards.length, 0);
   const totalMastered = Object.values(progress.progressByCard).filter(
@@ -34,10 +41,24 @@ export function StatsPage() {
         </div>
 
         {/* Global summary */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <StatCard value={totalMastered} label="Mots maîtrisés" color="text-green-600" bg="bg-green-50" border="border-green-200" />
           <StatCard value={`${globalPct}%`} label="Progression" color="text-indigo-600" bg="bg-indigo-50" border="border-indigo-200" />
           <StatCard value={streak > 0 ? <span className="flex items-center gap-1"><FaFire className="text-orange-500" />{streak}</span> : "–"} label="Jours de suite" color="text-orange-600" bg="bg-orange-50" border="border-orange-200" />
+          <StatCard
+            value={
+              <span className="flex flex-col items-center gap-0.5">
+                <span className="flex items-center gap-1"><LuTarget className="h-4 w-4" />{todayDone}<span className="text-xs font-normal text-gray-400">/{settings.dailyGoal}</span></span>
+                <div className="w-full h-1 rounded-full bg-gray-200 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-500 ${goalPct >= 100 ? "bg-green-400" : "bg-indigo-500"}`} style={{ width: `${goalPct}%` }} />
+                </div>
+              </span>
+            }
+            label="Objectif du jour"
+            color="text-indigo-600"
+            bg="bg-indigo-50"
+            border="border-indigo-200"
+          />
         </div>
 
         {/* Per-lesson breakdown */}
@@ -80,7 +101,7 @@ export function StatsPage() {
 
         {/* Activity heatmap */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
-          <StreakCalendar dailyActivity={progress.dailyActivity} />
+          <StreakCalendar dailyActivity={progress.dailyActivity} dailyGoal={settings.dailyGoal} />
         </div>
       </div>
     </div>

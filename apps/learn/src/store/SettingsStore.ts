@@ -5,7 +5,7 @@ import type { AppSettings } from "@vocabulary/utils";
 const DB_TABLE = "settings";
 
 export class SettingsStore extends ObservableStore {
-  dailyGoal = 10;
+  dailyGoal = 100;
   hasSeenOnboarding = false;
   isSpeechEnabled = true;
   lastLessonSlug: string | null = null;
@@ -15,7 +15,7 @@ export class SettingsStore extends ObservableStore {
   async loadFromDb() {
     const saved = await getFromDb<AppSettings>(DB_TABLE);
     if (saved) {
-      this.dailyGoal = saved.dailyGoal ?? 10;
+      this.dailyGoal = saved.dailyGoal ?? 100;
       this.hasSeenOnboarding = saved.hasSeenOnboarding ?? false;
       this.isSpeechEnabled = saved.isSpeechEnabled ?? true;
       this.lastLessonSlug = saved.lastLessonSlug ?? null;
@@ -39,7 +39,7 @@ export class SettingsStore extends ObservableStore {
   }
 
   setDailyGoal(goal: number) {
-    this.dailyGoal = Math.max(1, Math.min(100, goal));
+    this.dailyGoal = Math.max(1, Math.min(200, goal));
     this.notify();
     this.persistToDb();
   }

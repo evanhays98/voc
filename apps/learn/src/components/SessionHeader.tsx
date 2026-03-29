@@ -3,14 +3,15 @@ import { SpeechToggleButton } from "./SpeechToggleButton";
 
 interface SessionHeaderProps {
   title: string;
-  current: number;
-  total: number;
+  correctCount: number;
+  totalUnique: number;
+  remaining: number;
   streak: number;
   onExit: () => void;
 }
 
-export const SessionHeader = ({ title, current, total, streak, onExit }: SessionHeaderProps) => {
-  const pct = Math.round(((current - 1) / total) * 100);
+export const SessionHeader = ({ title, correctCount, totalUnique, remaining, streak, onExit }: SessionHeaderProps) => {
+  const pct = Math.round((correctCount / Math.max(totalUnique, 1)) * 100);
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4">
@@ -41,8 +42,11 @@ export const SessionHeader = ({ title, current, total, streak, onExit }: Session
               <FaFire /> {streak}
             </span>
           )}
-          <span className="text-sm text-gray-400 tabular-nums">
-            {current}/{total}
+          <span className="text-sm tabular-nums">
+            <span className="text-green-600 font-medium">{correctCount}</span>
+            <span className="text-gray-300">/</span>
+            <span className="text-gray-500">{totalUnique}</span>
+            {remaining > 0 && <span className="text-gray-300 ml-1.5">({remaining})</span>}
           </span>
         </div>
       </div>
