@@ -91,8 +91,6 @@ export function LessonsPage() {
           </button>
         </div>
 
-        <DailyGoalSettings />
-
         {/* Lesson list */}
         <div className="flex flex-col gap-4">
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -112,6 +110,9 @@ export function LessonsPage() {
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
           <SrsGraph progressByCard={progress.progressByCard} />
         </div>
+
+        {/* Settings */}
+        <DailyGoalSettings />
       </main>
     </div>
   );
