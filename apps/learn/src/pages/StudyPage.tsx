@@ -5,7 +5,7 @@ import { useCustomLessons } from "../store/customLessonsStoreInstance";
 import { useSettings } from "../store/settingsStoreInstance";
 import { StudySession } from "../components/StudySession";
 import { shuffleArray } from "@vocabulary/utils";
-import { useMemo } from "react";
+import { useRef } from "react";
 
 export function StudyPage() {
   const { lessonSlug } = useParams<{ lessonSlug: string }>();
@@ -43,17 +43,24 @@ export function StudyPage() {
 
   const reviewCards = eligibleCards.filter((c) => reviewCardIds.includes(c.id));
   const newCards = eligibleCards.filter((c) => newCardIds.includes(c.id));
-  const cappedNewCards = newCards.slice(0, settings.maxNewCardsPerSession);
 
-  const orderedCards = useMemo(
-    () => [...shuffleArray(reviewCards), ...shuffleArray(cappedNewCards)],
-    [reviewCards, cappedNewCards],
-  );
+  const reviewKey = reviewCardIds.sort().join(",");
+  const newKey = newCardIds.sort().join(",");
+  const prevKeyRef = useRef("");
+  const cardsRef = useRef<typeof eligibleCards>([]);
+
+  const currentKey = `${reviewKey}|${newKey}|${settings.maxNewCardsPerSession}`;
+  if (prevKeyRef.current !== currentKey) {
+    prevKeyRef.current = currentKey;
+    const shuffledNew = shuffleArray(newCards);
+    const cappedNew = shuffledNew.slice(0, settings.maxNewCardsPerSession);
+    cardsRef.current = [...shuffleArray(reviewCards), ...cappedNew];
+  }
 
   return (
     <StudySession
       lesson={lesson}
-      dueCards={orderedCards}
+      dueCards={cardsRef.current}
       progressByCard={progress.progressByCard}
       onExit={() => navigate("/")}
     />

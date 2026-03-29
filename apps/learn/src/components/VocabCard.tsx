@@ -8,6 +8,7 @@ import type { LessonCard, CardProgress } from "@vocabulary/utils";
 import { isAnswerCorrect, isAnswerExact } from "@vocabulary/utils";
 import { useSpeech } from "../hooks/useSpeech";
 import { useVoiceInput } from "../hooks/useVoiceInput";
+import { useSettings } from "../store/settingsStoreInstance";
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export const VocabCard = ({
   const [hintsRevealed, setHintsRevealed] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const settings = useSettings();
   const { speak, isSpeaking, skip } = useSpeech();
   const { isListening, isSupported: isVoiceSupported, startListening, stopListening } =
     useVoiceInput();
@@ -105,6 +107,11 @@ export const VocabCard = ({
     else onWrong();
   };
 
+  const playSentenceOrAdvance = (correct: boolean) => {
+    const spokenSentence = card.sentence.replace("____", card.targetWord);
+    speak(spokenSentence, cardLang, () => advance(correct), !settings.isSpeechEnabled);
+  };
+
   const submit = () => {
     if (isRevealed) return;
     const correct = isAnswerCorrect(inputValue, card.targetWord);
@@ -117,13 +124,12 @@ export const VocabCard = ({
       feedbackControls.start("shake");
     }
 
-    const spokenSentence = card.sentence.replace("____", card.targetWord);
-    speak(spokenSentence, cardLang, () => advance(correct));
+    playSentenceOrAdvance(correct);
   };
 
   const replayAndAdvance = () => {
     const spokenSentence = card.sentence.replace("____", card.targetWord);
-    speak(spokenSentence, cardLang, () => advance(isCorrect!));
+    speak(spokenSentence, cardLang, () => advance(isCorrect!), !settings.isSpeechEnabled);
   };
 
   const hasAccentMismatch =
@@ -200,7 +206,7 @@ export const VocabCard = ({
                   onClick={replayAndAdvance}
                   className="flex items-center gap-1.5 text-xs rounded-lg border border-gray-200 px-3 py-1.5 text-gray-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
                 >
-                  <LuVolume2 className="w-3.5 h-3.5" /> Réécouter
+                  <LuVolume2 className="w-3.5 h-3.5" /> {settings.isSpeechEnabled ? "Réécouter" : "Relire"}
                 </button>
               )}
               <button

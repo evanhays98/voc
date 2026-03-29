@@ -69,6 +69,7 @@ export interface DailyActivity {
 export interface AppSettings {
   dailyGoal: number;
   hasSeenOnboarding: boolean;
+  isSpeechEnabled: boolean;
   lastLessonSlug?: string;
   maxNewCardsPerSession: number;
 }

@@ -7,6 +7,7 @@ const DB_TABLE = "settings";
 export class SettingsStore extends ObservableStore {
   dailyGoal = 10;
   hasSeenOnboarding = false;
+  isSpeechEnabled = true;
   lastLessonSlug: string | null = null;
   maxNewCardsPerSession = 10;
   isLoaded = false;
@@ -16,6 +17,7 @@ export class SettingsStore extends ObservableStore {
     if (saved) {
       this.dailyGoal = saved.dailyGoal ?? 10;
       this.hasSeenOnboarding = saved.hasSeenOnboarding ?? false;
+      this.isSpeechEnabled = saved.isSpeechEnabled ?? true;
       this.lastLessonSlug = saved.lastLessonSlug ?? null;
       this.maxNewCardsPerSession = saved.maxNewCardsPerSession ?? 10;
     }
@@ -26,7 +28,13 @@ export class SettingsStore extends ObservableStore {
   private async persistToDb() {
     await saveInDb<AppSettings>({
       tableName: DB_TABLE,
-      data: { dailyGoal: this.dailyGoal, hasSeenOnboarding: this.hasSeenOnboarding, lastLessonSlug: this.lastLessonSlug ?? undefined, maxNewCardsPerSession: this.maxNewCardsPerSession },
+      data: {
+        dailyGoal: this.dailyGoal,
+        hasSeenOnboarding: this.hasSeenOnboarding,
+        isSpeechEnabled: this.isSpeechEnabled,
+        lastLessonSlug: this.lastLessonSlug ?? undefined,
+        maxNewCardsPerSession: this.maxNewCardsPerSession,
+      },
     });
   }
 
@@ -38,6 +46,12 @@ export class SettingsStore extends ObservableStore {
 
   setHasSeenOnboarding(seen: boolean) {
     this.hasSeenOnboarding = seen;
+    this.notify();
+    this.persistToDb();
+  }
+
+  setIsSpeechEnabled(isEnabled: boolean) {
+    this.isSpeechEnabled = isEnabled;
     this.notify();
     this.persistToDb();
   }

@@ -1,4 +1,5 @@
 import { FaFire } from "react-icons/fa";
+import { SpeechToggleButton } from "./SpeechToggleButton";
 
 interface SessionHeaderProps {
   title: string;
@@ -13,7 +14,7 @@ export const SessionHeader = ({ title, current, total, streak, onExit }: Session
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4">
-      <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
+      <div className="max-w-xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
         <button
           onClick={onExit}
           className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
@@ -34,6 +35,7 @@ export const SessionHeader = ({ title, current, total, streak, onExit }: Session
         </div>
 
         <div className="flex items-center gap-3">
+          <SpeechToggleButton />
           {streak >= 2 && (
             <span className="flex items-center gap-1 text-sm font-semibold text-orange-500">
               <FaFire /> {streak}

@@ -35,8 +35,15 @@ const pickBestVoice = (langTag: string): SpeechSynthesisVoice | null => {
   return candidates.reduce((best, v) => (scoreVoice(v) >= scoreVoice(best) ? v : best));
 };
 
+const estimatePlaybackDuration = (text: string): number => {
+  const normalizedText = text.trim();
+  const wordCount = normalizedText.split(/\s+/).filter(Boolean).length;
+  const characterCount = normalizedText.length;
+  return Math.max(900, Math.min(3500, wordCount * 320 + characterCount * 18));
+};
+
 interface UseSpeechReturn {
-  speak: (text: string, lang: string, onEnd: () => void) => void;
+  speak: (text: string, lang: string, onEnd: () => void, isMuted?: boolean) => void;
   isSpeaking: boolean;
   skip: () => void;
   isSupported: boolean;
@@ -46,23 +53,42 @@ export const useSpeech = (): UseSpeechReturn => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const onEndRef = useRef<(() => void) | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const isSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+
+  const clearPlaybackTimeout = useCallback(() => {
+    if (timeoutRef.current === null) return;
+    window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  }, []);
+
+  const finishPlayback = useCallback(() => {
+    clearPlaybackTimeout();
+    setIsSpeaking(false);
+    onEndRef.current?.();
+    onEndRef.current = null;
+  }, [clearPlaybackTimeout]);
 
   useEffect(() => {
     return () => {
       if (isSupported) window.speechSynthesis.cancel();
+      clearPlaybackTimeout();
     };
-  }, [isSupported]);
+  }, [clearPlaybackTimeout, isSupported]);
 
   const speak = useCallback(
-    (text: string, lang: string, onEnd: () => void) => {
-      if (!isSupported) {
-        onEnd();
+    (text: string, lang: string, onEnd: () => void, isMuted = false) => {
+      if (isSupported) window.speechSynthesis.cancel();
+      clearPlaybackTimeout();
+      onEndRef.current = onEnd;
+
+      if (isMuted || !isSupported) {
+        setIsSpeaking(true);
+        timeoutRef.current = window.setTimeout(() => {
+          finishPlayback();
+        }, estimatePlaybackDuration(text));
         return;
       }
-
-      window.speechSynthesis.cancel();
-      onEndRef.current = onEnd;
 
       const utterance = new SpeechSynthesisUtterance(text);
       const langTag = toLangTag(lang);
@@ -74,30 +100,19 @@ export const useSpeech = (): UseSpeechReturn => {
       if (bestVoice) utterance.voice = bestVoice;
 
       utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        onEndRef.current?.();
-        onEndRef.current = null;
-      };
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        onEndRef.current?.();
-        onEndRef.current = null;
-      };
+      utterance.onend = finishPlayback;
+      utterance.onerror = finishPlayback;
 
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     },
-    [isSupported]
+    [clearPlaybackTimeout, finishPlayback, isSupported]
   );
 
   const skip = useCallback(() => {
-    if (!isSupported) return;
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    onEndRef.current?.();
-    onEndRef.current = null;
-  }, [isSupported]);
+    if (isSupported) window.speechSynthesis.cancel();
+    finishPlayback();
+  }, [finishPlayback, isSupported]);
 
   return { speak, isSpeaking, skip, isSupported };
 };
