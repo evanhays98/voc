@@ -36,13 +36,17 @@ const buildPrompt = (words: string[], targetLanguage: string, nativeLanguage: st
 
 Create one flashcard per word for learning ${targetLanguage} as a foreign language by a ${nativeLanguage} speaker.
 
+CRITICAL RULE: "targetWord" MUST be the EXACT word from the input list, character for character. Do NOT conjugate, inflect, or change the form. The sentence must be constructed so that the word fits naturally in EXACTLY the form given.
+
 For each word return:
-- "targetWord": the specific form used in the sentence (conjugated/inflected), in ${targetLanguage}
-- "sentence": a natural contextual sentence in ${targetLanguage} with exactly "____" replacing the targetWord
-- "translation": the sentence translated into ${nativeLanguage}
-- "nativeWord": the base dictionary form of the word in ${nativeLanguage}
-- "hint": short grammatical note in English (e.g. "verb, 3rd person singular", "noun, feminine plural")
+- "targetWord": the EXACT word from the input list (copy it verbatim, no changes)
+- "sentence": a natural contextual sentence in ${targetLanguage} where "____" can be replaced by targetWord as-is
+- "translation": the full sentence translated into ${nativeLanguage}
+- "nativeWord": the translation of targetWord alone in ${nativeLanguage}
+- "hint": short grammatical note in English (e.g. "verb, infinitive", "noun, feminine plural")
 - "wordType": one of: verb, noun, adjective, adverb, preposition, pronoun, conjunction, other
+
+Example: if the input word is "manger", targetWord must be "manger" and the sentence must use "manger" (e.g. "Il faut ____ des légumes chaque jour."), NOT a conjugated form like "mange" or "mangent".
 
 Words: ${words.join(", ")}
 
