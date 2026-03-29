@@ -12,9 +12,11 @@ export const extractWordList = (text: string): string[] => {
 
   const matches = [...cleaned.matchAll(/[\p{L}\p{M}][\p{L}\p{M}'-]*/gu)];
   const isAcronym = (w: string) => /^\p{Lu}+$/u.test(w);
+  const startsWithUpper = (w: string) => /^\p{Lu}/u.test(w);
+  const isRomanNumeral = (w: string) => /^[ivxlcdmIVXLCDM]+$/i.test(w);
   const words = matches
-    .filter(([w]) => !isAcronym(w))
+    .filter(([w]) => !isAcronym(w) && !startsWithUpper(w))
     .map(([w]) => w.toLowerCase().replace(/['-]+$/, ""))
-    .filter((w) => w.length >= 2 && !NON_WORDS.has(w));
+    .filter((w) => w.length >= 2 && !NON_WORDS.has(w) && !w.includes("-") && !isRomanNumeral(w));
   return [...new Set(words)].sort((a, b) => a.localeCompare(b));
 };

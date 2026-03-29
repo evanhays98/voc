@@ -19,8 +19,8 @@ export function StatsPage() {
   const streak = progress.getStreak();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-6 py-8">
-      <div className="max-w-2xl mx-auto flex flex-col gap-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-6 sm:gap-8">
 
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -34,14 +34,14 @@ export function StatsPage() {
         </div>
 
         {/* Global summary */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <StatCard value={totalMastered} label="Mots maîtrisés" color="text-green-600" bg="bg-green-50" border="border-green-200" />
           <StatCard value={`${globalPct}%`} label="Progression" color="text-indigo-600" bg="bg-indigo-50" border="border-indigo-200" />
           <StatCard value={streak > 0 ? <span className="flex items-center gap-1"><FaFire className="text-orange-500" />{streak}</span> : "–"} label="Jours de suite" color="text-orange-600" bg="bg-orange-50" border="border-orange-200" />
         </div>
 
         {/* Per-lesson breakdown */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 flex flex-col gap-4">
           <h2 className="text-base font-semibold text-gray-900">Par leçon</h2>
           {ALL_LESSONS.map((lesson) => {
             const allIds = lesson.cards.map((c) => c.id);
@@ -54,7 +54,7 @@ export function StatsPage() {
 
             return (
               <div key={lesson.id} className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5">
                   <span className="text-sm font-medium text-gray-700">
                     {lesson.emoji} {lesson.title}
                   </span>
@@ -74,12 +74,12 @@ export function StatsPage() {
         </div>
 
         {/* SRS graph */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
           <SrsGraph progressByCard={progress.progressByCard} />
         </div>
 
         {/* Activity heatmap */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
           <StreakCalendar dailyActivity={progress.dailyActivity} />
         </div>
       </div>
@@ -96,8 +96,8 @@ interface StatCardProps {
 }
 
 const StatCard = ({ value, label, color, bg, border }: StatCardProps) => (
-  <div className={`rounded-2xl border ${border} ${bg} p-4 flex flex-col items-center gap-1 text-center`}>
-    <span className={`text-2xl font-bold ${color}`}>{value}</span>
+  <div className={`rounded-2xl border ${border} ${bg} p-3 sm:p-4 flex flex-col items-center gap-0.5 sm:gap-1 text-center`}>
+    <span className={`text-xl sm:text-2xl font-bold ${color}`}>{value}</span>
     <span className="text-xs text-gray-500">{label}</span>
   </div>
 );

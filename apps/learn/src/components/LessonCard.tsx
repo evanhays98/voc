@@ -21,7 +21,7 @@ export const LessonCard = ({ lesson, progressByCard, onSelect }: LessonCardProps
   return (
     <button
       onClick={onSelect}
-      className={`group w-full text-left rounded-2xl border ${colors.border} bg-white/80 backdrop-blur-sm px-6 py-5 shadow-sm ${colors.hoverBorder} hover:shadow-lg hover:bg-white transition-all`}
+      className={`group w-full text-left rounded-2xl border ${colors.border} bg-white/80 backdrop-blur-sm px-4 sm:px-6 py-4 sm:py-5 shadow-sm ${colors.hoverBorder} hover:shadow-lg hover:bg-white transition-all`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">

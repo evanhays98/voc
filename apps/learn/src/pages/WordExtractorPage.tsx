@@ -10,8 +10,8 @@ export function WordExtractorPage() {
   const words = useMemo(() => extractWordList(text), [text]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-6 py-8">
-      <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-5 sm:gap-6">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/")}
@@ -25,7 +25,7 @@ export function WordExtractorPage() {
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 flex flex-col gap-5 sm:gap-6">
           <ExtractorInput value={text} onChange={setText} wordCount={words.length} />
           <ExtractorResult words={words} />
         </div>

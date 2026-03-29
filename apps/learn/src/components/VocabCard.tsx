@@ -135,7 +135,7 @@ export const VocabCard = ({
         variants={feedbackVariants}
         animate={feedbackControls}
         initial="idle"
-        className={`rounded-3xl bg-white/85 backdrop-blur-sm border shadow-2xl p-8 flex flex-col gap-6 transition-colors ${
+        className={`rounded-3xl bg-white/85 backdrop-blur-sm border shadow-2xl p-5 sm:p-8 flex flex-col gap-5 sm:gap-6 transition-colors ${
           isCorrect === null
             ? "border-white/60"
             : isCorrect

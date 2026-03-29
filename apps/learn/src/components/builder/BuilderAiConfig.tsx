@@ -34,7 +34,7 @@ export const BuilderAiConfig = ({
               key={m.id}
               type="button"
               onClick={() => onModelChange(m.id)}
-              className={`flex-1 rounded-xl border py-2 text-sm font-medium transition-all ${
+              className={`min-w-0 flex-1 basis-[calc(33%-0.5rem)] rounded-xl border py-2 px-2 text-xs sm:text-sm font-medium transition-all ${
                 model === m.id
                   ? "border-indigo-400 bg-indigo-50 text-indigo-700"
                   : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"

@@ -28,12 +28,12 @@ export const SessionComplete = ({
   const isPerfect = pct === 100;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-sm bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 shadow-2xl p-10 flex flex-col items-center gap-6 text-center"
+        className="w-full max-w-sm bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 shadow-2xl p-6 sm:p-10 flex flex-col items-center gap-5 sm:gap-6 text-center"
       >
         <div className="text-6xl flex items-center justify-center">
           {isPerfect ? <LuPartyPopper className="text-indigo-500" /> : <LuDumbbell className="text-violet-500" />}

@@ -103,8 +103,8 @@ export function BuilderPage() {
   const showProgress = isGenerating || (generator.totalBatches > 0 && !hasCards);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-6 py-8">
-      <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-5 sm:gap-6">
 
         <div className="flex items-center gap-4">
           <button
@@ -117,7 +117,7 @@ export function BuilderPage() {
         </div>
 
         {/* Config */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col gap-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 flex flex-col gap-5 sm:gap-6">
           <BuilderLessonMeta
             title={title}
             description={description}
@@ -143,7 +143,7 @@ export function BuilderPage() {
         </div>
 
         {/* Word list */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
           <BuilderWordList
             value={wordListRaw}
             onChange={setWordListRaw}
@@ -177,7 +177,7 @@ export function BuilderPage() {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6"
             >
               <BuilderGenerationProgress
                 completed={generator.completedBatches}
@@ -199,31 +199,31 @@ export function BuilderPage() {
               exit="hidden"
               className="flex flex-col gap-4"
             >
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
                 <BuilderCardList
                   cards={generator.cards}
                   onRemove={generator.removeCard}
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <button
                   onClick={generator.reset}
-                  className="rounded-2xl border border-gray-200 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition-colors flex items-center gap-2"
+                  className="rounded-2xl border border-gray-200 bg-white/80 px-3 sm:px-4 py-2.5 sm:py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition-colors flex items-center gap-2"
                 >
                   <LuRefreshCw className="w-4 h-4" />
                   Recommencer
                 </button>
                 <button
                   onClick={handleCopyJson}
-                  className="rounded-2xl border border-gray-200 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition-colors flex items-center gap-2"
+                  className="rounded-2xl border border-gray-200 bg-white/80 px-3 sm:px-4 py-2.5 sm:py-3 text-sm font-semibold text-gray-700 hover:border-gray-300 transition-colors flex items-center gap-2"
                 >
                   {copied ? <LuCheck className="w-4 h-4 text-emerald-500" /> : <LuCopy className="w-4 h-4" />}
-                  {copied ? "Copié !" : "Copier JSON"}
+                  {copied ? "Copié !" : "JSON"}
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 rounded-2xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500 active:scale-95 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 rounded-2xl bg-emerald-600 py-2.5 sm:py-3 text-sm font-semibold text-white hover:bg-emerald-500 active:scale-95 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
                 >
                   <LuBookmark className="w-4 h-4" />
                   Sauvegarder la leçon ({generator.cards.length} cartes)
