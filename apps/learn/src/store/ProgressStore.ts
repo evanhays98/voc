@@ -59,24 +59,74 @@ export class ProgressStore extends ObservableStore {
     return firstMissing === -1 ? 365 : firstMissing;
   }
 
-  recordSuccess(cardId: string, lessonId: string) {
+  private getSiblingCardIds(targetWord: string, allLessons: Lesson[]): string[] {
+    return allLessons
+      .flatMap((l) => l.cards)
+      .filter((c) => c.targetWord === targetWord)
+      .map((c) => c.id);
+  }
+
+  syncProgressAcrossLessons(allLessons: Lesson[]) {
+    const wordToCardIds = new Map<string, string[]>();
+    allLessons
+      .flatMap((l) => l.cards)
+      .forEach((c) => {
+        const existing = wordToCardIds.get(c.targetWord) ?? [];
+        wordToCardIds.set(c.targetWord, [...existing, c.id]);
+      });
+
+    let hasChanges = false;
+    const updated = { ...this.progressByCard };
+
+    wordToCardIds.forEach((cardIds) => {
+      if (cardIds.length < 2) return;
+      const progresses = cardIds
+        .map((id) => updated[id])
+        .filter(Boolean);
+      if (progresses.length === 0) return;
+
+      const best = progresses.reduce((a, b) => (a.level > b.level ? a : b));
+
+      cardIds.forEach((id) => {
+        const current = updated[id];
+        if (!current || current.level < best.level) {
+          updated[id] = { ...best, cardId: id };
+          hasChanges = true;
+        }
+      });
+    });
+
+    if (hasChanges) {
+      this.progressByCard = updated;
+      this.notify();
+      this.persistToDb();
+    }
+  }
+
+  private syncProgress(cardIds: string[], level: 0 | 1 | 2 | 3 | 4 | 5, nextReview: number, lessonId: string, now: number) {
+    const updated = { ...this.progressByCard };
+    cardIds.forEach((id) => {
+      updated[id] = { cardId: id, lessonId, level, nextReviewAt: nextReview, lastSeenAt: now };
+    });
+    this.progressByCard = updated;
+  }
+
+  recordSuccess(cardId: string, lessonId: string, targetWord: string, allLessons: Lesson[]) {
     const existing = this.progressByCard[cardId];
     const now = Date.now();
 
     const newLevel = existing ? clampLevel(existing.level + 1) : clampLevel(5);
     const nextReview = newLevel === 5 ? Infinity : now + intervalMs(newLevel);
 
-    this.progressByCard = {
-      ...this.progressByCard,
-      [cardId]: { cardId, lessonId, level: newLevel, nextReviewAt: nextReview, lastSeenAt: now },
-    };
+    const siblingIds = this.getSiblingCardIds(targetWord, allLessons);
+    this.syncProgress(siblingIds, newLevel, nextReview, lessonId, now);
 
     this.recordActivity(true);
     this.notify();
     this.persistToDb();
   }
 
-  recordFailure(cardId: string, lessonId: string) {
+  recordFailure(cardId: string, lessonId: string, targetWord: string, allLessons: Lesson[]) {
     const existing = this.progressByCard[cardId];
     const now = Date.now();
 
@@ -84,10 +134,8 @@ export class ProgressStore extends ObservableStore {
     const newLevel = clampLevel(baseLevel);
     const nextReview = now + intervalMs(newLevel);
 
-    this.progressByCard = {
-      ...this.progressByCard,
-      [cardId]: { cardId, lessonId, level: newLevel, nextReviewAt: nextReview, lastSeenAt: now },
-    };
+    const siblingIds = this.getSiblingCardIds(targetWord, allLessons);
+    this.syncProgress(siblingIds, newLevel, nextReview, lessonId, now);
 
     this.recordActivity(false);
     this.notify();

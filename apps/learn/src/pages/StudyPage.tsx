@@ -62,6 +62,7 @@ export function StudyPage() {
       lesson={lesson}
       initialCards={cardsRef.current}
       allCards={eligibleCards}
+      allLessons={allLessons}
       progressByCard={progress.progressByCard}
       onExit={() => navigate("/")}
     />

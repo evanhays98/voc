@@ -9,15 +9,20 @@ import { OnboardingModal } from "./components/OnboardingModal";
 import { progressStore } from "./store/progressStoreInstance";
 import { settingsStore, useSettings, useSettingsFn } from "./store/settingsStoreInstance";
 import { customLessonsStore } from "./store/customLessonsStoreInstance";
+import { ALL_LESSONS } from "./lessons";
 
 export default function App() {
   const settings = useSettings();
   const { setHasSeenOnboarding } = useSettingsFn();
 
   useEffect(() => {
-    progressStore.getStore().loadFromDb();
+    const init = async () => {
+      await progressStore.getStore().loadFromDb();
+      await customLessonsStore.getStore().loadFromDb();
+      progressStore.getStore().syncProgressAcrossLessons([...ALL_LESSONS, ...customLessonsStore.getStore().lessons]);
+    };
+    init();
     settingsStore.getStore().loadFromDb();
-    customLessonsStore.getStore().loadFromDb();
   }, []);
 
   const showOnboarding = settings.isLoaded && !settings.hasSeenOnboarding;

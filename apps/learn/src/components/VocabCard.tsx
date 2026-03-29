@@ -48,6 +48,7 @@ interface VocabCardProps {
   progress: CardProgress | undefined;
   onCorrect: () => void;
   onWrong: () => void;
+  onAssisted: () => void;
 }
 
 export const VocabCard = ({
@@ -56,6 +57,7 @@ export const VocabCard = ({
   progress,
   onCorrect,
   onWrong,
+  onAssisted,
 }: VocabCardProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -102,38 +104,51 @@ export const VocabCard = ({
     }
   };
 
-  const advance = (correct: boolean) => {
-    if (correct) onCorrect();
+  const advance = (correct: boolean, usedHints: boolean) => {
+    if (correct && usedHints) onAssisted();
+    else if (correct) onCorrect();
     else onWrong();
   };
 
-  const playSentenceOrAdvance = (correct: boolean) => {
+  const playSentenceOrAdvance = (correct: boolean, usedHints: boolean) => {
     const spokenSentence = card.sentence.replace("____", card.targetWord);
-    speak(spokenSentence, cardLang, () => advance(correct), !settings.isSpeechEnabled);
+    speak(spokenSentence, cardLang, () => advance(correct, usedHints), !settings.isSpeechEnabled);
   };
 
   const submit = () => {
     if (isRevealed) return;
     const correct = isAnswerCorrect(inputValue, card.targetWord);
+    const usedHints = hintsRevealed > 0;
     setIsCorrect(correct);
     setIsRevealed(true);
 
-    if (correct) {
+    if (correct && !usedHints) {
       feedbackControls.start("pulse");
-    } else {
+    } else if (!correct) {
       feedbackControls.start("shake");
     }
 
-    playSentenceOrAdvance(correct);
+    playSentenceOrAdvance(correct, usedHints);
   };
 
   const replayAndAdvance = () => {
     const spokenSentence = card.sentence.replace("____", card.targetWord);
-    speak(spokenSentence, cardLang, () => advance(isCorrect!), !settings.isSpeechEnabled);
+    const usedHints = hintsRevealed > 0;
+    speak(spokenSentence, cardLang, () => advance(isCorrect!, usedHints), !settings.isSpeechEnabled);
   };
 
   const hasAccentMismatch =
     isRevealed && isCorrect === true && !isAnswerExact(inputValue, card.targetWord);
+
+  const usedHints = hintsRevealed > 0;
+  const borderClass =
+    isCorrect === null
+      ? "border-white/60"
+      : isCorrect && !usedHints
+      ? "border-green-200"
+      : isCorrect && usedHints
+      ? "border-amber-200"
+      : "border-red-200";
 
   return (
     <motion.div variants={cardVariants} initial="hidden" animate="visible" exit="exit">
@@ -141,13 +156,7 @@ export const VocabCard = ({
         variants={feedbackVariants}
         animate={feedbackControls}
         initial="idle"
-        className={`rounded-3xl bg-white/85 backdrop-blur-sm border shadow-2xl p-5 sm:p-8 flex flex-col gap-5 sm:gap-6 transition-colors ${
-          isCorrect === null
-            ? "border-white/60"
-            : isCorrect
-            ? "border-green-200"
-            : "border-red-200"
-        }`}
+        className={`rounded-3xl bg-white/85 backdrop-blur-sm border shadow-2xl p-5 sm:p-8 flex flex-col gap-5 sm:gap-6 transition-colors ${borderClass}`}
       >
         <div className="flex items-center justify-between">
           <LevelIndicator level={level} />

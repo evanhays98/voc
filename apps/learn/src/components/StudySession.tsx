@@ -13,6 +13,7 @@ interface StudySessionProps {
   lesson: Lesson;
   initialCards: LessonCard[];
   allCards: LessonCard[];
+  allLessons: Lesson[];
   progressByCard: Record<string, CardProgress>;
   onExit: () => void;
 }
@@ -21,6 +22,7 @@ export const StudySession = ({
   lesson,
   initialCards,
   allCards,
+  allLessons,
   progressByCard,
   onExit,
 }: StudySessionProps) => {
@@ -56,7 +58,7 @@ export const StudySession = ({
   const handleCorrect = () => {
     if (!current) return;
     const wasLevel = progressByCard[current.id]?.level;
-    recordSuccess(current.id, lesson.id);
+    recordSuccess(current.id, lesson.id, current.targetWord, allLessons);
 
     const willMaster = wasLevel === 4 || wasLevel === undefined;
     if (willMaster) {
@@ -83,7 +85,19 @@ export const StudySession = ({
 
   const handleWrong = () => {
     if (!current) return;
-    recordFailure(current.id, lesson.id);
+    recordFailure(current.id, lesson.id, current.targetWord, allLessons);
+    setSessionStreak(0);
+    seenRef.current += 1;
+
+    const rest = queue.slice(1);
+    const insertAt = Math.min(RETRY_OFFSET, rest.length);
+    const withRetry = [...rest.slice(0, insertAt), current, ...rest.slice(insertAt)];
+    setQueue(withRetry);
+  };
+
+  const handleAssisted = () => {
+    if (!current) return;
+    recordFailure(current.id, lesson.id, current.targetWord, allLessons);
     setSessionStreak(0);
     seenRef.current += 1;
 
@@ -115,6 +129,7 @@ export const StudySession = ({
                 progress={progressByCard[current.id]}
                 onCorrect={handleCorrect}
                 onWrong={handleWrong}
+                onAssisted={handleAssisted}
               />
             )}
           </AnimatePresence>

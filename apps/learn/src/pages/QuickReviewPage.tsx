@@ -47,6 +47,7 @@ export function QuickReviewPage() {
       lesson={quickLesson}
       initialCards={dueCards}
       allCards={dueCards}
+      allLessons={ALL_LESSONS}
       progressByCard={progress.progressByCard}
       onExit={() => navigate("/")}
     />
