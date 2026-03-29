@@ -8,6 +8,7 @@ import { StreakBadge } from "../components/StreakBadge";
 import { DailyGoalRing } from "../components/DailyGoalRing";
 import { SrsGraph } from "../components/SrsGraph";
 import { LuHand, LuChartColumn, LuPencil, LuPlay, LuFileText } from "react-icons/lu";
+import { InstallButton } from "../components/InstallButton";
 
 export function LessonsPage() {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ export function LessonsPage() {
             <p className="text-sm text-gray-500">Que veux-tu apprendre aujourd'hui ?</p>
           </div>
           <div className="flex items-center gap-3">
+            <InstallButton />
             <StreakBadge streak={streak} size="sm" />
             <DailyGoalRing done={todayDone} goal={settings.dailyGoal} size={52} />
           </div>
