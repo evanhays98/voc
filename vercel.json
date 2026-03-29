@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @vocabulary/learn build",
+  "buildCommand": "pnpm --filter @vocabulary/learn... build",
   "outputDirectory": "apps/learn/dist",
   "installCommand": "pnpm install",
   "framework": null
