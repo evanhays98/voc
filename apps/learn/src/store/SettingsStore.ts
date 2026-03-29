@@ -8,6 +8,7 @@ export class SettingsStore extends ObservableStore {
   dailyGoal = 10;
   hasSeenOnboarding = false;
   lastLessonSlug: string | null = null;
+  maxNewCardsPerSession = 10;
   isLoaded = false;
 
   async loadFromDb() {
@@ -16,6 +17,7 @@ export class SettingsStore extends ObservableStore {
       this.dailyGoal = saved.dailyGoal ?? 10;
       this.hasSeenOnboarding = saved.hasSeenOnboarding ?? false;
       this.lastLessonSlug = saved.lastLessonSlug ?? null;
+      this.maxNewCardsPerSession = saved.maxNewCardsPerSession ?? 10;
     }
     this.isLoaded = true;
     this.notify();
@@ -24,7 +26,7 @@ export class SettingsStore extends ObservableStore {
   private async persistToDb() {
     await saveInDb<AppSettings>({
       tableName: DB_TABLE,
-      data: { dailyGoal: this.dailyGoal, hasSeenOnboarding: this.hasSeenOnboarding, lastLessonSlug: this.lastLessonSlug ?? undefined },
+      data: { dailyGoal: this.dailyGoal, hasSeenOnboarding: this.hasSeenOnboarding, lastLessonSlug: this.lastLessonSlug ?? undefined, maxNewCardsPerSession: this.maxNewCardsPerSession },
     });
   }
 
@@ -42,6 +44,12 @@ export class SettingsStore extends ObservableStore {
 
   setLastLessonSlug(slug: string) {
     this.lastLessonSlug = slug;
+    this.notify();
+    this.persistToDb();
+  }
+
+  setMaxNewCardsPerSession(max: number) {
+    this.maxNewCardsPerSession = Math.max(1, Math.min(200, max));
     this.notify();
     this.persistToDb();
   }

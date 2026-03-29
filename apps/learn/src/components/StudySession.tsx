@@ -1,12 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import type { Lesson, LessonCard, CardProgress } from "@vocabulary/utils";
-import { shuffleArray } from "@vocabulary/utils";
 import { VocabCard } from "./VocabCard";
 import { SessionComplete } from "./SessionComplete";
 import { useProgressFn } from "../store/progressStoreInstance";
 import { SessionHeader } from "./SessionHeader";
 import { useConfetti } from "../hooks/useConfetti";
+
+const RETRY_OFFSET = 10;
 
 interface StudySessionProps {
   lesson: Lesson;
@@ -21,11 +22,12 @@ export const StudySession = ({
   progressByCard,
   onExit,
 }: StudySessionProps) => {
-  const shuffled = useMemo(() => shuffleArray(dueCards), [dueCards]);
-  const [index, setIndex] = useState(0);
+  const [queue, setQueue] = useState<LessonCard[]>(dueCards);
   const [correctCount, setCorrectCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [sessionStreak, setSessionStreak] = useState(0);
+  const totalUniqueRef = useRef(dueCards.length);
+  const seenRef = useRef(0);
 
   const { recordSuccess, recordFailure } = useProgressFn();
   const { triggerConfetti, triggerSmallConfetti } = useConfetti();
@@ -48,15 +50,7 @@ export const StudySession = ({
     );
   }
 
-  const current = shuffled[index];
-
-  const advance = () => {
-    if (index + 1 >= shuffled.length) {
-      setIsComplete(true);
-    } else {
-      setIndex((i) => i + 1);
-    }
-  };
+  const current = queue[0];
 
   const handleCorrect = () => {
     if (!current) return;
@@ -75,27 +69,39 @@ export const StudySession = ({
     }
 
     setCorrectCount((n) => n + 1);
-    advance();
+    seenRef.current += 1;
+    const rest = queue.slice(1);
+    if (rest.length === 0) {
+      setIsComplete(true);
+    } else {
+      setQueue(rest);
+    }
   };
 
   const handleWrong = () => {
     if (!current) return;
     recordFailure(current.id, lesson.id);
     setSessionStreak(0);
-    advance();
+    seenRef.current += 1;
+
+    const rest = queue.slice(1);
+    const insertAt = Math.min(RETRY_OFFSET, rest.length);
+    const withRetry = [...rest.slice(0, insertAt), current, ...rest.slice(insertAt)];
+    setQueue(withRetry);
   };
 
   const restart = () => {
-    setIndex(0);
+    setQueue(dueCards);
     setCorrectCount(0);
     setIsComplete(false);
     setSessionStreak(0);
+    seenRef.current = 0;
   };
 
   if (isComplete) {
     return (
       <SessionComplete
-        totalDue={dueCards.length}
+        totalDue={totalUniqueRef.current}
         correctCount={correctCount}
         onExit={onExit}
         onRestart={restart}
@@ -107,8 +113,8 @@ export const StudySession = ({
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
       <SessionHeader
         title={lesson.title}
-        current={index + 1}
-        total={shuffled.length}
+        current={Math.min(seenRef.current + 1, totalUniqueRef.current)}
+        total={totalUniqueRef.current}
         streak={sessionStreak}
         onExit={onExit}
       />
@@ -118,7 +124,7 @@ export const StudySession = ({
           <AnimatePresence mode="wait">
             {current && (
               <VocabCard
-                key={current.id}
+                key={`${current.id}-${seenRef.current}`}
                 card={current}
                 targetLanguage={lesson.targetLanguage}
                 progress={progressByCard[current.id]}

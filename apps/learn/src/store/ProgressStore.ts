@@ -115,6 +115,20 @@ export class ProgressStore extends ObservableStore {
     );
   }
 
+  getSessionCards(_lessonId: string, allCardIds: string[]): { reviewCardIds: string[]; newCardIds: string[] } {
+    const reviewCardIds: string[] = [];
+    const newCardIds: string[] = [];
+    allCardIds.filter((id) => !this.isMastered(id)).forEach((id) => {
+      const progress = this.progressByCard[id];
+      if (!progress) {
+        newCardIds.push(id);
+      } else if (this.isDue(id)) {
+        reviewCardIds.push(id);
+      }
+    });
+    return { reviewCardIds, newCardIds };
+  }
+
   getLessonStats(allCardIds: string[]) {
     const mastered = allCardIds.filter((id) => this.isMastered(id)).length;
     const learning = allCardIds.filter(

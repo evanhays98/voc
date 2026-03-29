@@ -70,6 +70,7 @@ export interface AppSettings {
   dailyGoal: number;
   hasSeenOnboarding: boolean;
   lastLessonSlug?: string;
+  maxNewCardsPerSession: number;
 }
 
 export interface UserProgress {

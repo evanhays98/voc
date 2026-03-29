@@ -2,14 +2,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getLessonBySlug } from "../lessons";
 import { useProgress, useProgressFn } from "../store/progressStoreInstance";
 import { useCustomLessons } from "../store/customLessonsStoreInstance";
+import { useSettings } from "../store/settingsStoreInstance";
 import { StudySession } from "../components/StudySession";
+import { shuffleArray } from "@vocabulary/utils";
+import { useMemo } from "react";
 
 export function StudyPage() {
   const { lessonSlug } = useParams<{ lessonSlug: string }>();
   const navigate = useNavigate();
   const progress = useProgress();
   const customLessons = useCustomLessons();
-  const { getDueCards } = useProgressFn();
+  const settings = useSettings();
+  const { getSessionCards } = useProgressFn();
 
   const lesson =
     getLessonBySlug(lessonSlug ?? "") ??
@@ -24,13 +28,21 @@ export function StudyPage() {
   }
 
   const allCardIds = lesson.cards.map((c) => c.id);
-  const dueCardIds = getDueCards(lesson.id, allCardIds);
-  const dueCards = lesson.cards.filter((c) => dueCardIds.includes(c.id));
+  const { reviewCardIds, newCardIds } = getSessionCards(lesson.id, allCardIds);
+
+  const reviewCards = lesson.cards.filter((c) => reviewCardIds.includes(c.id));
+  const newCards = lesson.cards.filter((c) => newCardIds.includes(c.id));
+  const cappedNewCards = newCards.slice(0, settings.maxNewCardsPerSession);
+
+  const orderedCards = useMemo(
+    () => [...shuffleArray(reviewCards), ...shuffleArray(cappedNewCards)],
+    [reviewCards, cappedNewCards],
+  );
 
   return (
     <StudySession
       lesson={lesson}
-      dueCards={dueCards}
+      dueCards={orderedCards}
       progressByCard={progress.progressByCard}
       onExit={() => navigate("/")}
     />
