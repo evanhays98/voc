@@ -40,17 +40,20 @@ export function LessonsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-md border-b border-white/60 px-4 sm:px-6 py-4 sm:py-5 shadow-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-1.5">{greeting} <LuHand className="text-yellow-500" /></h1>
-            <p className="text-sm text-gray-500">Que veux-tu apprendre aujourd'hui ?</p>
+      <header className="bg-white/70 backdrop-blur-md border-b border-white/60 px-4 sm:px-6 py-3 sm:py-5 shadow-sm sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img src="/icon.svg" alt="Logo" className="h-8 w-8 shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-bold text-gray-900 flex items-center gap-1.5 truncate">{greeting} <LuHand className="text-yellow-500" /></h1>
+              <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Que veux-tu apprendre aujourd'hui ?</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <SpeechToggleButton />
             <InstallButton />
             <StreakBadge streak={streak} size="sm" />
-            <DailyGoalRing done={todayDone} goal={settings.dailyGoal} size={52} />
+            <DailyGoalRing done={todayDone} goal={settings.dailyGoal} size={40} />
           </div>
         </div>
       </header>
