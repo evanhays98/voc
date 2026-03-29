@@ -7,7 +7,7 @@ import { LessonCard } from "../components/LessonCard";
 import { StreakBadge } from "../components/StreakBadge";
 import { DailyGoalRing } from "../components/DailyGoalRing";
 import { SrsGraph } from "../components/SrsGraph";
-import { LuHand, LuChartColumn, LuPencil, LuPlay } from "react-icons/lu";
+import { LuHand, LuChartColumn, LuPencil, LuPlay, LuFileText } from "react-icons/lu";
 
 export function LessonsPage() {
   const navigate = useNavigate();
@@ -74,6 +74,12 @@ export function LessonsPage() {
             className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm px-4 py-3.5 text-sm font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
           >
             <span className="flex items-center gap-1.5"><LuPencil className="w-4 h-4" /> Créer</span>
+          </button>
+          <button
+            onClick={() => navigate("/extractor")}
+            className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm px-4 py-3.5 text-sm font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+          >
+            <span className="flex items-center gap-1.5"><LuFileText className="w-4 h-4" /> Extraire</span>
           </button>
         </div>
 

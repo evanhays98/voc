@@ -4,6 +4,7 @@ import { LessonsPage } from "./pages/LessonsPage";
 import { StudyPage } from "./pages/StudyPage";
 import { StatsPage } from "./pages/StatsPage";
 import { BuilderPage } from "./pages/BuilderPage";
+import { WordExtractorPage } from "./pages/WordExtractorPage";
 import { OnboardingModal } from "./components/OnboardingModal";
 import { progressStore } from "./store/progressStoreInstance";
 import { settingsStore, useSettings, useSettingsFn } from "./store/settingsStoreInstance";
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/study/:lessonSlug" element={<StudyPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/builder" element={<BuilderPage />} />
+        <Route path="/extractor" element={<WordExtractorPage />} />
       </Routes>
     </>
   );
