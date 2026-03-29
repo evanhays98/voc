@@ -7,6 +7,7 @@ const DB_TABLE = "settings";
 export class SettingsStore extends ObservableStore {
   dailyGoal = 10;
   hasSeenOnboarding = false;
+  lastLessonSlug: string | null = null;
   isLoaded = false;
 
   async loadFromDb() {
@@ -14,6 +15,7 @@ export class SettingsStore extends ObservableStore {
     if (saved) {
       this.dailyGoal = saved.dailyGoal ?? 10;
       this.hasSeenOnboarding = saved.hasSeenOnboarding ?? false;
+      this.lastLessonSlug = saved.lastLessonSlug ?? null;
     }
     this.isLoaded = true;
     this.notify();
@@ -22,7 +24,7 @@ export class SettingsStore extends ObservableStore {
   private async persistToDb() {
     await saveInDb<AppSettings>({
       tableName: DB_TABLE,
-      data: { dailyGoal: this.dailyGoal, hasSeenOnboarding: this.hasSeenOnboarding },
+      data: { dailyGoal: this.dailyGoal, hasSeenOnboarding: this.hasSeenOnboarding, lastLessonSlug: this.lastLessonSlug ?? undefined },
     });
   }
 
@@ -34,6 +36,12 @@ export class SettingsStore extends ObservableStore {
 
   setHasSeenOnboarding(seen: boolean) {
     this.hasSeenOnboarding = seen;
+    this.notify();
+    this.persistToDb();
+  }
+
+  setLastLessonSlug(slug: string) {
+    this.lastLessonSlug = slug;
     this.notify();
     this.persistToDb();
   }

@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { LessonsPage } from "./pages/LessonsPage";
 import { StudyPage } from "./pages/StudyPage";
 import { StatsPage } from "./pages/StatsPage";
-import { QuickReviewPage } from "./pages/QuickReviewPage";
 import { BuilderPage } from "./pages/BuilderPage";
 import { OnboardingModal } from "./components/OnboardingModal";
 import { progressStore } from "./store/progressStoreInstance";
@@ -30,7 +29,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LessonsPage />} />
         <Route path="/study/:lessonSlug" element={<StudyPage />} />
-        <Route path="/quick-review" element={<QuickReviewPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/builder" element={<BuilderPage />} />
       </Routes>

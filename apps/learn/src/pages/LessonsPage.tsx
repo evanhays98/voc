@@ -1,18 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { ALL_LESSONS } from "../lessons";
 import { useProgress } from "../store/progressStoreInstance";
-import { useSettings } from "../store/settingsStoreInstance";
+import { useSettings, useSettingsFn } from "../store/settingsStoreInstance";
 import { useCustomLessons } from "../store/customLessonsStoreInstance";
 import { LessonCard } from "../components/LessonCard";
 import { StreakBadge } from "../components/StreakBadge";
 import { DailyGoalRing } from "../components/DailyGoalRing";
 import { SrsGraph } from "../components/SrsGraph";
-import { LuHand, LuZap, LuChartColumn, LuPencil } from "react-icons/lu";
+import { LuHand, LuChartColumn, LuPencil, LuPlay } from "react-icons/lu";
 
 export function LessonsPage() {
   const navigate = useNavigate();
   const progress = useProgress();
   const settings = useSettings();
+  const { setLastLessonSlug } = useSettingsFn();
   const customLessons = useCustomLessons();
 
   const allLessons = [...ALL_LESSONS, ...customLessons.lessons];
@@ -20,15 +21,14 @@ export function LessonsPage() {
   const todayKey = new Date().toISOString().slice(0, 10);
   const todayDone = progress.dailyActivity[todayKey]?.total ?? 0;
 
-  const totalDueNow = ALL_LESSONS.reduce((sum, lesson) => {
-    const dueIds = lesson.cards.filter(
-      (c) =>
-        !progress.progressByCard[c.id] ||
-        (progress.progressByCard[c.id].level < 5 &&
-          progress.progressByCard[c.id].nextReviewAt <= Date.now())
-    );
-    return sum + dueIds.length;
-  }, 0);
+  const lastLesson = settings.lastLessonSlug
+    ? allLessons.find((l) => l.slug === settings.lastLessonSlug)
+    : null;
+
+  const goToLesson = (slug: string) => {
+    setLastLessonSlug(slug);
+    navigate(`/study/${slug}`);
+  };
 
   const hour = new Date().getHours();
   const greeting =
@@ -54,22 +54,15 @@ export function LessonsPage() {
 
         {/* Quick actions */}
         <div className="flex gap-3">
-          <button
-            onClick={() => navigate("/quick-review")}
-            disabled={totalDueNow === 0}
-            className={`flex-1 rounded-2xl border py-3.5 px-4 text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-              totalDueNow > 0
-                ? "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-200 active:scale-95"
-                : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
-          >
-            <span className="flex items-center gap-1.5"><LuZap className="w-4 h-4" /> Révision rapide</span>
-            {totalDueNow > 0 && (
-              <span className="bg-white/25 rounded-full px-2 py-0.5 text-xs">
-                {totalDueNow}
-              </span>
-            )}
-          </button>
+          {lastLesson && (
+            <button
+              onClick={() => goToLesson(lastLesson.slug)}
+              className="flex-1 rounded-2xl border bg-indigo-600 border-indigo-600 text-white py-3.5 px-4 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-indigo-500 shadow-lg shadow-indigo-200 active:scale-95 transition-all"
+            >
+              <LuPlay className="w-4 h-4" />
+              Continuer — {lastLesson.title}
+            </button>
+          )}
           <button
             onClick={() => navigate("/stats")}
             className="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm px-4 py-3.5 text-sm font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
@@ -94,7 +87,7 @@ export function LessonsPage() {
               key={lesson.id}
               lesson={lesson}
               progressByCard={progress.progressByCard}
-              onSelect={() => navigate(`/study/${lesson.slug}`)}
+              onSelect={() => goToLesson(lesson.slug)}
             />
           ))}
         </div>
