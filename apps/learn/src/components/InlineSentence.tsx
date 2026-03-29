@@ -84,6 +84,11 @@ export const InlineSentence = ({
       <div className="flex items-center gap-2">
         <WordTypeBadge wordType={wordType} />
         <span className="text-xs text-gray-400 italic">{hint}</span>
+        {!isRevealed && (
+          <span className="ml-auto text-xs font-medium text-gray-400 tabular-nums">
+            {targetWord.replace(/\s+/g, "").length} lettres
+          </span>
+        )}
       </div>
     </div>
   );
