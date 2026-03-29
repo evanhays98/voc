@@ -1,6 +1,6 @@
 import { ObservableStore } from "@starter/global-store";
 import { saveInDb, getFromDb } from "@starter/global-store";
-import type { CardProgress, DailyActivity, UserProgress } from "@vocabulary/utils";
+import type { CardProgress, DailyActivity, Lesson, UserProgress } from "@vocabulary/utils";
 import { SRS_INTERVALS_MINUTES } from "@vocabulary/utils";
 
 const DB_TABLE = "userProgress";
@@ -127,6 +127,15 @@ export class ProgressStore extends ObservableStore {
       }
     });
     return { reviewCardIds, newCardIds };
+  }
+
+  getMasteredTargetWords(targetLanguage: string, nativeLanguage: string, allLessons: Lesson[]): Set<string> {
+    const masteredWords = allLessons
+      .filter((l) => l.targetLanguage === targetLanguage && l.nativeLanguage === nativeLanguage)
+      .flatMap((l) => l.cards)
+      .filter((card) => this.isMastered(card.id))
+      .map((card) => card.targetWord);
+    return new Set(masteredWords);
   }
 
   getLessonStats(allCardIds: string[]) {

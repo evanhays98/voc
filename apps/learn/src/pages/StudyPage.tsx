@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { getLessonBySlug } from "../lessons";
+import { getLessonBySlug, ALL_LESSONS } from "../lessons";
 import { useProgress, useProgressFn } from "../store/progressStoreInstance";
 import { useCustomLessons } from "../store/customLessonsStoreInstance";
 import { useSettings } from "../store/settingsStoreInstance";
@@ -13,7 +13,7 @@ export function StudyPage() {
   const progress = useProgress();
   const customLessons = useCustomLessons();
   const settings = useSettings();
-  const { getSessionCards } = useProgressFn();
+  const { getSessionCards, getMasteredTargetWords } = useProgressFn();
 
   const lesson =
     getLessonBySlug(lessonSlug ?? "") ??
@@ -27,11 +27,22 @@ export function StudyPage() {
     );
   }
 
-  const allCardIds = lesson.cards.map((c) => c.id);
+  const allLessons = [...ALL_LESSONS, ...customLessons.lessons];
+  const masteredTargetWords = getMasteredTargetWords(
+    lesson.targetLanguage,
+    lesson.nativeLanguage,
+    allLessons,
+  );
+
+  const eligibleCards = lesson.cards.filter(
+    (c) => !masteredTargetWords.has(c.targetWord),
+  );
+
+  const allCardIds = eligibleCards.map((c) => c.id);
   const { reviewCardIds, newCardIds } = getSessionCards(lesson.id, allCardIds);
 
-  const reviewCards = lesson.cards.filter((c) => reviewCardIds.includes(c.id));
-  const newCards = lesson.cards.filter((c) => newCardIds.includes(c.id));
+  const reviewCards = eligibleCards.filter((c) => reviewCardIds.includes(c.id));
+  const newCards = eligibleCards.filter((c) => newCardIds.includes(c.id));
   const cappedNewCards = newCards.slice(0, settings.maxNewCardsPerSession);
 
   const orderedCards = useMemo(
