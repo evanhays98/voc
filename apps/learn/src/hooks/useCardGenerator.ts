@@ -10,6 +10,7 @@ export interface GenerateConfig {
   nativeLanguage: string;
   model: ModelId;
   apiKey: string;
+  batchSize: number;
 }
 
 const isAnthropicModel = (model: ModelId) => model.startsWith("claude");
@@ -23,8 +24,6 @@ interface OpenAIResponse {
 interface AnthropicResponse {
   content: Array<{ text: string }>;
 }
-
-const BATCH_SIZE = 10;
 
 const chunkArray = <T>(arr: T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
@@ -119,7 +118,7 @@ export const useCardGenerator = () => {
   const [failedBatches, setFailedBatches] = useState(0);
 
   const generate = async (config: GenerateConfig) => {
-    const batches = chunkArray(config.words, BATCH_SIZE);
+    const batches = chunkArray(config.words, config.batchSize);
     setIsGenerating(true);
     setCompletedBatches(0);
     setTotalBatches(batches.length);

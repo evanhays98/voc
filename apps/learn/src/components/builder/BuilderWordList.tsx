@@ -8,11 +8,13 @@ interface BuilderWordListProps {
   value: string;
   onChange: (v: string) => void;
   disabled: boolean;
+  batchSize: number;
+  onBatchSizeChange: (v: number) => void;
 }
 
-export const BuilderWordList = ({ value, onChange, disabled }: BuilderWordListProps) => {
+export const BuilderWordList = ({ value, onChange, disabled, batchSize, onBatchSizeChange }: BuilderWordListProps) => {
   const wordCount = parseWords(value).length;
-  const batchCount = Math.ceil(wordCount / 10);
+  const batchCount = Math.ceil(wordCount / batchSize);
 
   return (
     <div className="flex flex-col gap-2">
@@ -34,6 +36,19 @@ export const BuilderWordList = ({ value, onChange, disabled }: BuilderWordListPr
         rows={8}
         className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono resize-none outline-none focus:border-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed"
       />
+      <div className="flex items-center gap-2">
+        <label className="text-xs font-medium text-gray-500">Mots par lot</label>
+        <select
+          value={batchSize}
+          onChange={(e) => onBatchSizeChange(Number(e.target.value))}
+          disabled={disabled}
+          className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-indigo-400 disabled:opacity-50"
+        >
+          {[5, 10, 15, 20, 25, 50, 100].map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };

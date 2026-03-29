@@ -17,6 +17,6 @@ export const extractWordList = (text: string): string[] => {
   const words = matches
     .filter(([w]) => !isAcronym(w) && !startsWithUpper(w))
     .map(([w]) => w.toLowerCase().replace(/['-]+$/, ""))
-    .filter((w) => w.length >= 2 && !NON_WORDS.has(w) && !w.includes("-") && !isRomanNumeral(w));
+    .filter((w) => w.length >= 2 && !NON_WORDS.has(w) && !w.includes("-") && !w.includes("'") && !isRomanNumeral(w));
   return [...new Set(words)].sort((a, b) => a.localeCompare(b));
 };

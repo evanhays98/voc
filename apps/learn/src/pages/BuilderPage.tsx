@@ -31,6 +31,7 @@ export function BuilderPage() {
   const [model, setModel] = useState<ModelId>("gpt-5.4");
   const [apiKey, setApiKey] = useState(() => localStorage.getItem("vocab_api_key") ?? "");
   const [wordListRaw, setWordListRaw] = useState("");
+  const [batchSize, setBatchSize] = useState(10);
   const [error, setError] = useState<string | null>(null);
 
   const handleApiKeyChange = (v: string) => {
@@ -49,7 +50,7 @@ export function BuilderPage() {
       return;
     }
     setError(null);
-    await generator.generate({ words, targetLanguage, nativeLanguage, model, apiKey });
+    await generator.generate({ words, targetLanguage, nativeLanguage, model, apiKey, batchSize });
   };
 
   const handleSave = () => {
@@ -148,6 +149,8 @@ export function BuilderPage() {
             value={wordListRaw}
             onChange={setWordListRaw}
             disabled={isGenerating}
+            batchSize={batchSize}
+            onBatchSizeChange={setBatchSize}
           />
         </div>
 
