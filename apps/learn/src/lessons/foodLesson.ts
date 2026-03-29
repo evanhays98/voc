@@ -7,6 +7,8 @@ export const foodLesson: Lesson = {
   description: "Apprends le vocabulaire de la nourriture et de la cuisine",
   targetLanguage: "fr",
   nativeLanguage: "en",
+  color: "orange",
+  emoji: "🍳",
   cards: [
     {
       id: "food-01",

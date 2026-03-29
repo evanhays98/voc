@@ -1,3 +1,7 @@
+// ─── Lesson colours ──────────────────────────────────────────────────────────
+
+export type LessonColor = "sky" | "orange" | "violet" | "emerald" | "rose" | "amber";
+
 // ─── Lesson (built-in, static) ───────────────────────────────────────────────
 
 export type WordType =
@@ -12,22 +16,27 @@ export type WordType =
 
 export interface LessonCard {
   id: string;
-  targetWord: string;           // e.g. "mange"  (word to find, in target language)
-  sentence: string;             // e.g. "Je ____ des pâtes."  (use ____ as placeholder)
-  translation: string;          // Translation of full sentence in native language
-  nativeWord: string;           // Native equivalent of targetWord, e.g. "eat"
-  hint: string;                 // Grammatical hint, e.g. "1st person singular, present"
+  targetWord: string;
+  sentence: string;
+  translation: string;
+  nativeWord: string;
+  hint: string;
   wordType: WordType;
+  targetLanguage?: string; // override for cross-lesson sessions
 }
 
 export interface Lesson {
   id: string;
   slug: string;
-  title: string;                // e.g. "Code de la route"
+  title: string;
   description: string;
-  targetLanguage: string;       // e.g. "fr"
-  nativeLanguage: string;       // e.g. "en"
+  targetLanguage: string;
+  nativeLanguage: string;
   cards: LessonCard[];
+  color?: LessonColor;
+  emoji?: string;
+  isCustom?: boolean;
+  createdAt?: string;
 }
 
 // ─── SRS Progress (persisted in IndexedDB via global-store) ──────────────────
@@ -47,11 +56,22 @@ export const SRS_INTERVALS_MINUTES: Record<SrsLevel, number> = {
 export interface CardProgress {
   cardId: string;
   lessonId: string;
-  level: SrsLevel;             // 0 = unseen / failed, 5 = mastered
-  nextReviewAt: number;        // timestamp ms; 0 = immediately due
-  lastSeenAt: number;          // timestamp ms
+  level: SrsLevel;
+  nextReviewAt: number;
+  lastSeenAt: number;
+}
+
+export interface DailyActivity {
+  correct: number;
+  total: number;
+}
+
+export interface AppSettings {
+  dailyGoal: number;
+  hasSeenOnboarding: boolean;
 }
 
 export interface UserProgress {
-  progressByCard: Record<string, CardProgress>; // key = cardId
+  progressByCard: Record<string, CardProgress>;
+  dailyActivity?: Record<string, DailyActivity>;
 }

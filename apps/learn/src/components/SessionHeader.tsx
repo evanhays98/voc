@@ -1,15 +1,18 @@
+import { FaFire } from "react-icons/fa";
+
 interface SessionHeaderProps {
   title: string;
   current: number;
   total: number;
+  streak: number;
   onExit: () => void;
 }
 
-export const SessionHeader = ({ title, current, total, onExit }: SessionHeaderProps) => {
+export const SessionHeader = ({ title, current, total, streak, onExit }: SessionHeaderProps) => {
   const pct = Math.round(((current - 1) / total) * 100);
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4">
       <div className="max-w-xl mx-auto flex items-center justify-between gap-4">
         <button
           onClick={onExit}
@@ -30,9 +33,16 @@ export const SessionHeader = ({ title, current, total, onExit }: SessionHeaderPr
           </div>
         </div>
 
-        <span className="text-sm text-gray-400 tabular-nums">
-          {current}/{total}
-        </span>
+        <div className="flex items-center gap-3">
+          {streak >= 2 && (
+            <span className="flex items-center gap-1 text-sm font-semibold text-orange-500">
+              <FaFire /> {streak}
+            </span>
+          )}
+          <span className="text-sm text-gray-400 tabular-nums">
+            {current}/{total}
+          </span>
+        </div>
       </div>
     </header>
   );

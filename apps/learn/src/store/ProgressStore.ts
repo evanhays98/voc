@@ -1,6 +1,6 @@
 import { ObservableStore } from "@starter/global-store";
 import { saveInDb, getFromDb } from "@starter/global-store";
-import type { CardProgress, UserProgress } from "@vocabulary/utils";
+import type { CardProgress, DailyActivity, UserProgress } from "@vocabulary/utils";
 import { SRS_INTERVALS_MINUTES } from "@vocabulary/utils";
 
 const DB_TABLE = "userProgress";
@@ -15,14 +15,18 @@ const intervalMs = (level: 0 | 1 | 2 | 3 | 4 | 5): number => {
   return minutes === Infinity ? Infinity : minutes * 60 * 1000;
 };
 
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
 export class ProgressStore extends ObservableStore {
   progressByCard: Record<string, CardProgress> = {};
+  dailyActivity: Record<string, DailyActivity> = {};
   isLoaded = false;
 
   async loadFromDb() {
     const saved = await getFromDb<UserProgress>(DB_TABLE);
     if (saved) {
-      this.progressByCard = saved.progressByCard;
+      this.progressByCard = saved.progressByCard ?? {};
+      this.dailyActivity = saved.dailyActivity ?? {};
     }
     this.isLoaded = true;
     this.notify();
@@ -31,8 +35,28 @@ export class ProgressStore extends ObservableStore {
   private async persistToDb() {
     await saveInDb<UserProgress>({
       tableName: DB_TABLE,
-      data: { progressByCard: this.progressByCard },
+      data: { progressByCard: this.progressByCard, dailyActivity: this.dailyActivity },
     });
+  }
+
+  private recordActivity(isCorrect: boolean) {
+    const key = todayKey();
+    const existing = this.dailyActivity[key] ?? { correct: 0, total: 0 };
+    this.dailyActivity = {
+      ...this.dailyActivity,
+      [key]: { correct: existing.correct + (isCorrect ? 1 : 0), total: existing.total + 1 },
+    };
+  }
+
+  getStreak(): number {
+    const dayKeys = Array.from({ length: 365 }, (_, i) => {
+      const d = new Date(Date.now() - i * 86400000);
+      return d.toISOString().slice(0, 10);
+    });
+    const firstMissing = dayKeys.findIndex(
+      (key) => !this.dailyActivity[key] || this.dailyActivity[key].total === 0
+    );
+    return firstMissing === -1 ? 365 : firstMissing;
   }
 
   recordSuccess(cardId: string, lessonId: string) {
@@ -44,15 +68,10 @@ export class ProgressStore extends ObservableStore {
 
     this.progressByCard = {
       ...this.progressByCard,
-      [cardId]: {
-        cardId,
-        lessonId,
-        level: newLevel,
-        nextReviewAt: nextReview,
-        lastSeenAt: now,
-      },
+      [cardId]: { cardId, lessonId, level: newLevel, nextReviewAt: nextReview, lastSeenAt: now },
     };
 
+    this.recordActivity(true);
     this.notify();
     this.persistToDb();
   }
@@ -67,15 +86,10 @@ export class ProgressStore extends ObservableStore {
 
     this.progressByCard = {
       ...this.progressByCard,
-      [cardId]: {
-        cardId,
-        lessonId,
-        level: newLevel,
-        nextReviewAt: nextReview,
-        lastSeenAt: now,
-      },
+      [cardId]: { cardId, lessonId, level: newLevel, nextReviewAt: nextReview, lastSeenAt: now },
     };
 
+    this.recordActivity(false);
     this.notify();
     this.persistToDb();
   }

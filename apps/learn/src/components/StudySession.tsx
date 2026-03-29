@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
+import { AnimatePresence } from "framer-motion";
 import type { Lesson, LessonCard, CardProgress } from "@vocabulary/utils";
 import { shuffleArray } from "@vocabulary/utils";
 import { VocabCard } from "./VocabCard";
 import { SessionComplete } from "./SessionComplete";
 import { useProgressFn } from "../store/progressStoreInstance";
 import { SessionHeader } from "./SessionHeader";
+import { useConfetti } from "../hooks/useConfetti";
 
 interface StudySessionProps {
   lesson: Lesson;
@@ -23,8 +25,10 @@ export const StudySession = ({
   const [index, setIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [sessionStreak, setSessionStreak] = useState(0);
 
   const { recordSuccess, recordFailure } = useProgressFn();
+  const { triggerConfetti, triggerSmallConfetti } = useConfetti();
 
   if (dueCards.length === 0) {
     return (
@@ -56,7 +60,20 @@ export const StudySession = ({
 
   const handleCorrect = () => {
     if (!current) return;
+    const wasLevel = progressByCard[current.id]?.level;
     recordSuccess(current.id, lesson.id);
+
+    const willMaster = wasLevel === 4 || wasLevel === undefined;
+    if (willMaster) {
+      triggerConfetti();
+    }
+
+    const newStreak = sessionStreak + 1;
+    setSessionStreak(newStreak);
+    if (newStreak > 0 && newStreak % 3 === 0 && !willMaster) {
+      triggerSmallConfetti();
+    }
+
     setCorrectCount((n) => n + 1);
     advance();
   };
@@ -64,6 +81,7 @@ export const StudySession = ({
   const handleWrong = () => {
     if (!current) return;
     recordFailure(current.id, lesson.id);
+    setSessionStreak(0);
     advance();
   };
 
@@ -71,6 +89,7 @@ export const StudySession = ({
     setIndex(0);
     setCorrectCount(0);
     setIsComplete(false);
+    setSessionStreak(0);
   };
 
   if (isComplete) {
@@ -85,26 +104,29 @@ export const StudySession = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col">
       <SessionHeader
         title={lesson.title}
         current={index + 1}
         total={shuffled.length}
+        streak={sessionStreak}
         onExit={onExit}
       />
 
       <main className="flex-1 flex items-start justify-center px-6 py-10">
         <div className="w-full max-w-xl">
-          {current && (
-            <VocabCard
-              key={current.id}
-              card={current}
-              targetLanguage={lesson.targetLanguage}
-              progress={progressByCard[current.id]}
-              onCorrect={handleCorrect}
-              onWrong={handleWrong}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            {current && (
+              <VocabCard
+                key={current.id}
+                card={current}
+                targetLanguage={lesson.targetLanguage}
+                progress={progressByCard[current.id]}
+                onCorrect={handleCorrect}
+                onWrong={handleWrong}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </main>
     </div>

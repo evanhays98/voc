@@ -11,6 +11,7 @@ interface InlineSentenceProps {
   onSubmit: () => void;
   wordType: WordType;
   hint: string;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export const InlineSentence = ({
@@ -23,12 +24,14 @@ export const InlineSentence = ({
   onSubmit,
   wordType,
   hint,
+  inputRef,
 }: InlineSentenceProps) => {
   const parts = sentence.split("____");
   const before = parts[0] ?? "";
   const after = parts[1] ?? "";
 
-  const inputWidth = Math.max(targetWord.length + 2, 6);
+  // Auto-size: grow with typed content, minimum = target word length + padding
+  const inputWidth = Math.max(inputValue.length + 2, targetWord.length + 2, 6);
 
   const borderColor =
     isCorrect === null
@@ -46,16 +49,19 @@ export const InlineSentence = ({
       <div className="flex items-baseline flex-wrap gap-x-1 text-2xl font-medium text-gray-800 leading-relaxed">
         <span>{before}</span>
 
-        <span className={`inline-flex items-center border-b-2 px-1 transition-colors ${borderColor}`}>
+        <span
+          className={`inline-flex items-center border-b-2 px-1 transition-colors ${borderColor}`}
+        >
           {isRevealed ? (
             <span
               className={`font-bold ${isCorrect ? "text-green-600" : "text-red-500"}`}
-              style={{ minWidth: `${inputWidth}ch` }}
+              style={{ minWidth: `${Math.max(targetWord.length + 2, 6)}ch` }}
             >
               {targetWord}
             </span>
           ) : (
             <input
+              ref={inputRef}
               autoFocus
               value={inputValue}
               onChange={(e) => onChange(e.target.value)}
@@ -66,6 +72,8 @@ export const InlineSentence = ({
               disabled={isRevealed}
               spellCheck={false}
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
             />
           )}
         </span>

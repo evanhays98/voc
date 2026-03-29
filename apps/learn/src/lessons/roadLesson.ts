@@ -7,6 +7,8 @@ export const roadLesson: Lesson = {
   description: "Apprends le vocabulaire de la conduite et du code de la route",
   targetLanguage: "fr",
   nativeLanguage: "en",
+  color: "sky",
+  emoji: "🚗",
   cards: [
     {
       id: "road-01",

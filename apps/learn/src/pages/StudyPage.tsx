@@ -1,15 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { getLessonBySlug } from "../lessons";
 import { useProgress, useProgressFn } from "../store/progressStoreInstance";
+import { useCustomLessons } from "../store/customLessonsStoreInstance";
 import { StudySession } from "../components/StudySession";
 
 export function StudyPage() {
   const { lessonSlug } = useParams<{ lessonSlug: string }>();
   const navigate = useNavigate();
   const progress = useProgress();
+  const customLessons = useCustomLessons();
   const { getDueCards } = useProgressFn();
 
-  const lesson = getLessonBySlug(lessonSlug ?? "");
+  const lesson =
+    getLessonBySlug(lessonSlug ?? "") ??
+    customLessons.lessons.find((l) => l.slug === lessonSlug);
 
   if (!lesson) {
     return (
