@@ -1,8 +1,29 @@
 import type { Lesson } from "@vocabulary/utils";
 import { roadLesson } from "./roadLesson";
-import { foodLesson } from "./foodLesson";
 
-export const ALL_LESSONS: Lesson[] = [roadLesson, foodLesson];
+export const ALL_LESSONS: Lesson[] = [roadLesson];
 
-export const getLessonBySlug = (slug: string): Lesson | undefined =>
-  ALL_LESSONS.find((l) => l.slug === slug);
+const staticLessonLoaders: Record<string, () => Promise<Lesson>> = {
+  food: async () => {
+    const module = await import("./foodLesson");
+    return module.foodLesson;
+  },
+};
+
+export const getLessonBySlug = async (slug: string): Promise<Lesson | undefined> => {
+  const staticLesson = ALL_LESSONS.find((l) => l.slug === slug);
+  if (staticLesson) return staticLesson;
+
+  const loader = staticLessonLoaders[slug];
+  if (!loader) return undefined;
+
+  return loader();
+};
+
+export const getAllLessons = async (): Promise<Lesson[]> => {
+  const lazyLessons = await Promise.all(
+    Object.values(staticLessonLoaders).map((loadLesson) => loadLesson()),
+  );
+
+  return [...ALL_LESSONS, ...lazyLessons];
+};
