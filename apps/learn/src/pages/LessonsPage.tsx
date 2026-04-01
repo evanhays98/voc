@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ALL_LESSONS } from "../lessons";
+import type { Lesson } from "@vocabulary/utils";
+import { getAllLessons } from "../lessons";
 import { useProgress } from "../store/progressStoreInstance";
 import { useSettings, useSettingsFn } from "../store/settingsStoreInstance";
 import { useCustomLessons } from "../store/customLessonsStoreInstance";
@@ -18,8 +20,13 @@ export function LessonsPage() {
   const settings = useSettings();
   const { setLastLessonSlug } = useSettingsFn();
   const customLessons = useCustomLessons();
+  const [builtInLessons, setBuiltInLessons] = useState<Lesson[]>([]);
 
-  const allLessons = [...ALL_LESSONS, ...customLessons.lessons];
+  useEffect(() => {
+    getAllLessons().then(setBuiltInLessons);
+  }, []);
+
+  const allLessons = [...builtInLessons, ...customLessons.lessons];
   const streak = progress.getStreak();
   const todayKey = new Date().toISOString().slice(0, 10);
   const todayDone = progress.dailyActivity[todayKey]?.total ?? 0;
@@ -39,7 +46,6 @@ export function LessonsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      {/* Header */}
       <header className="bg-white/70 backdrop-blur-md border-b border-white/60 px-4 sm:px-6 py-3 sm:py-5 shadow-sm sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -59,8 +65,6 @@ export function LessonsPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8">
-
-        {/* Quick actions */}
         <div className="flex flex-wrap gap-2 sm:gap-3">
           {lastLesson && (
             <button
@@ -91,7 +95,6 @@ export function LessonsPage() {
           </button>
         </div>
 
-        {/* Lesson list */}
         <div className="flex flex-col gap-4">
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Mes leçons
@@ -106,12 +109,10 @@ export function LessonsPage() {
           ))}
         </div>
 
-        {/* SRS upcoming graph */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6">
           <SrsGraph progressByCard={progress.progressByCard} />
         </div>
 
-        {/* Settings */}
         <DailyGoalSettings />
       </main>
     </div>
