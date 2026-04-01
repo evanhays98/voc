@@ -1,11 +1,12 @@
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getLessonBySlug, ALL_LESSONS } from "../lessons";
+import type { Lesson } from "@vocabulary/utils";
+import { getLessonBySlug, getAllLessons } from "../lessons";
 import { useProgress, useProgressFn } from "../store/progressStoreInstance";
 import { useCustomLessons } from "../store/customLessonsStoreInstance";
 import { useSettings } from "../store/settingsStoreInstance";
 import { StudySession } from "../components/StudySession";
 import { shuffleArray } from "@vocabulary/utils";
-import { useRef } from "react";
 
 export function StudyPage() {
   const { lessonSlug } = useParams<{ lessonSlug: string }>();
@@ -14,10 +15,32 @@ export function StudyPage() {
   const customLessons = useCustomLessons();
   const settings = useSettings();
   const { getSessionCards, getMasteredTargetWords } = useProgressFn();
+  const [builtInLessons, setBuiltInLessons] = useState<Lesson[]>([]);
+  const [lesson, setLesson] = useState<Lesson | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const lesson =
-    getLessonBySlug(lessonSlug ?? "") ??
-    customLessons.lessons.find((l) => l.slug === lessonSlug);
+  useEffect(() => {
+    const loadLesson = async () => {
+      setIsLoading(true);
+      const foundLesson =
+        (await getLessonBySlug(lessonSlug ?? "")) ??
+        customLessons.lessons.find((l) => l.slug === lessonSlug);
+      const lessons = await getAllLessons();
+      setLesson(foundLesson);
+      setBuiltInLessons(lessons);
+      setIsLoading(false);
+    };
+
+    loadLesson();
+  }, [lessonSlug, customLessons.lessons]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Chargement de la leçon...</p>
+      </div>
+    );
+  }
 
   if (!lesson) {
     return (
@@ -27,7 +50,7 @@ export function StudyPage() {
     );
   }
 
-  const allLessons = [...ALL_LESSONS, ...customLessons.lessons];
+  const allLessons = [...builtInLessons, ...customLessons.lessons];
   const masteredTargetWords = getMasteredTargetWords(
     lesson.targetLanguage,
     lesson.nativeLanguage,
